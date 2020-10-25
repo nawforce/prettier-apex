@@ -6,10 +6,15 @@ const path = require("path");
 const { spawnSync } = childProcess;
 const constants = require("./constants");
 const { findNextUncommentedCharacter } = require("./util");
+const httpServer = require("./http-server");
 
 const apexTypes = constants.APEX_TYPES;
 
 const MAX_BUFFER = 8192 * 8192;
+
+const CONNECT_ERROR = "Failed to connect to Apex parsing server";
+
+let serverAutoLaunched = false;
 
 function parseTextWithSpawn(text, anonymous) {
   let serializerBin = path.join(__dirname, "../vendor/apex-ast-serializer/bin");
@@ -59,7 +64,7 @@ function parseTextWithHttp(text, serverHost, serverPort, anonymous) {
   });
 
   if (executionResult.status) {
-    const executionError = `Failed to connect to Apex parsing server\r\n${executionResult.stderr.toString()}`;
+    const executionError = `${CONNECT_ERROR}\r\n${executionResult.stderr.toString()}`;
     throw new Error(executionError);
   }
 
@@ -478,13 +483,35 @@ function getEmptyLineLocations(sourceCode) {
 function parse(sourceCode, _, options) {
   const lineIndexes = getLineIndexes(sourceCode);
   let serializedAst;
-  if (options.apexStandaloneParser === "built-in") {
-    serializedAst = parseTextWithHttp(
-      sourceCode,
-      options.apexStandaloneHost,
-      options.apexStandalonePort,
-      options.parser === "apex-anonymous",
-    );
+  if (options.apexStandaloneParser.startsWith("built-in")) {
+    try {
+      serializedAst = parseTextWithHttp(
+        sourceCode,
+        options.apexStandaloneHost,
+        options.apexStandalonePort,
+        options.parser === "apex-anonymous",
+      );
+    } catch (error) {
+      if (
+        error.message.startsWith(CONNECT_ERROR) &&
+        options.apexStandaloneParser === "built-in-autolaunched"
+      ) {
+        // If in autolaunch mode, start the server for next time
+        if (!serverAutoLaunched) {
+          serverAutoLaunched = true;
+          const command = httpServer.launch();
+          command.unref();
+        }
+
+        // As the server may take some time to boot, use spawn for this request
+        serializedAst = parseTextWithSpawn(
+          sourceCode,
+          options.parser === "apex-anonymous",
+        );
+      } else {
+        throw error;
+      }
+    }
   } else {
     serializedAst = parseTextWithSpawn(
       sourceCode,

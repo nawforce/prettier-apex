@@ -131,6 +131,17 @@ function handleBinaryishExpression(path, print) {
     isNestedExpression &&
     isNodeSamePrecedenceAsParent &&
     !isNestedRightExpression;
+
+  // #265 - This variable signifies that the right child of this node should
+  // be laid out on the same indentation level, even though the left child node
+  // should be in its own group, e.g:
+  // a = b > c && d && e -> The node (d) here
+  const hasRightChildNodeWithoutGrouping =
+    !isLeftChildNodeWithoutGrouping &&
+    isNestedExpression &&
+    isNodeSamePrecedenceAsParent &&
+    !isNestedRightExpression;
+
   // This variable signifies that the left node and right has the same
   // precedence, and thus they should be laid out on the same indent level, e.g.:
   // a = b > 1 &&
@@ -154,6 +165,12 @@ function handleBinaryishExpression(path, print) {
     isTopMostParentNodeWithoutGrouping
   ) {
     docs.push(leftDoc);
+    docs.push(" ");
+    docs.push(concat([operationDoc, line, rightDoc]));
+    return concat(docs);
+  }
+  if (hasRightChildNodeWithoutGrouping) {
+    docs.push(group(leftDoc));
     docs.push(" ");
     docs.push(concat([operationDoc, line, rightDoc]));
     return concat(docs);
@@ -215,6 +232,7 @@ function shouldDottedExpressionBreak(path) {
 }
 
 function handleDottedExpression(path, print) {
+  const node = path.getValue();
   const dottedExpressionParts = [];
   const dottedExpressionDoc = path.call(print, "dottedExpr", "value");
 
@@ -222,6 +240,9 @@ function handleDottedExpression(path, print) {
     dottedExpressionParts.push(dottedExpressionDoc);
     if (shouldDottedExpressionBreak(path)) {
       dottedExpressionParts.push(softline);
+    }
+    if (node.isSafeNav) {
+      dottedExpressionParts.push("?");
     }
     dottedExpressionParts.push(".");
     return concat(dottedExpressionParts);
@@ -2210,8 +2231,11 @@ function handleGroupByClause(path, print) {
   if (typeDoc) {
     parts.push(")");
   }
+  // #286 - HAVING is part of the GROUP BY node, however we want them to behave
+  // like part a query node, because it makes sense to have it on the same
+  // indentation as the GROUP BY node.
   if (havingDoc) {
-    parts.push(concat([line, havingDoc]));
+    return concat([groupIndentConcat(parts), line, group(havingDoc)]);
   }
   return groupIndentConcat(parts);
 }
