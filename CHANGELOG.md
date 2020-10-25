@@ -1,6 +1,6 @@
 # Unreleased
 
-- Add 'built-in-autolaunched' option for '--apex-standalone-parser' to auto start server if needed
+- Remove extraneous indentation and blank line for HAVING clauses ([issue](https://github.com/dangmai/prettier-plugin-apex/issues/286)).
 
 # 1.7.0
 
