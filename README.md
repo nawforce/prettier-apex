@@ -1,4 +1,10 @@
-# Prettier Apex [![Build Status](https://travis-ci.org/dangmai/prettier-plugin-apex.svg)](https://travis-ci.org/dangmai/prettier-plugin-apex) [![npm](https://img.shields.io/npm/v/prettier-plugin-apex.svg)](https://www.npmjs.com/package/prettier-plugin-apex) ![NPM](https://img.shields.io/npm/l/prettier-plugin-apex.svg) [![codecov](https://codecov.io/gh/dangmai/prettier-plugin-apex/branch/master/graph/badge.svg)](https://codecov.io/gh/dangmai/prettier-plugin-apex) [![Known Vulnerabilities](https://snyk.io/test/github/dangmai/prettier-plugin-apex/badge.svg)](https://snyk.io/test/github/dangmai/prettier-plugin-apex) [![Join the chat at https://gitter.im/prettier-plugin-apex/community](https://badges.gitter.im/prettier-plugin-apex/community.svg)](https://gitter.im/prettier-plugin-apex/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+# Fork of dangmai/prettier-plugin-apex
+
+This is a fork of dangmai/prettier-plugin-apex that adds the ability to auto launch the Java server. To use this set '--apex-standalone-parser built-in-autolaunched'. If the server is not already running it will start
+it automatically. As the server may take some time to spin up the initial few requests may be handled via running
+a Java command but once the server is available it will be used to improve throughput.
+
+# Prettier Apex
 
 ![Prettier Banner](https://raw.githubusercontent.com/prettier/prettier-logo/master/images/prettier-banner-light.png)
 

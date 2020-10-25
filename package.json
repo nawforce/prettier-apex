@@ -1,7 +1,7 @@
 {
-  "name": "prettier-plugin-apex",
+  "name": "prettier-plugin-apex-autolaunch",
   "version": "1.7.0",
-  "description": "Salesforce Apex plugin for Prettier",
+  "description": "Salesforce Apex plugin for Prettier (Fork of prettier-plugin-apex with server autolaunching)",
   "main": "src/index.js",
   "bin": {
     "start-apex-server": "./bin/start-apex-server.js",
